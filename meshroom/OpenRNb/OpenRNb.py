@@ -5,9 +5,9 @@ from meshroom.core import desc
 from meshroom.core.utils import VERBOSE_LEVEL
 
 
-class RNbNeuS(desc.Node):
+class OpenRNb(desc.Node):
     """
-    Neural surface reconstruction from normal maps using RNb-NeuS.
+    Neural surface reconstruction from normal maps using Open-RNb.
 
     Accepts SfMData files for normals, albedos, and masks.
     When albedos are provided, uses two-phase training with
@@ -21,7 +21,7 @@ class RNbNeuS(desc.Node):
 
     documentation = """
     Neural surface reconstruction from multi-view normal maps.
-    Uses RNb-NeuS (license-free) with NeuS neural implicit surfaces.
+    Uses Open-RNb with NeuS neural implicit surfaces.
 
     **Inputs:**
     - Normal maps SfMData (required)
@@ -108,11 +108,11 @@ class RNbNeuS(desc.Node):
             invalidate=False,
         ),
         desc.File(
-            name="rnbneusPath",
-            label="RNb-NeuS Path",
-            description="Path to RNb-NeuS license-free code directory. "
-                        "Set via config.json key RNBNEUS_PATH.",
-            value="${RNBNEUS_PATH}",
+            name="openRnbPath",
+            label="Open-RNb Path",
+            description="Path to Open-RNb code directory. "
+                        "Set via config.json key OPEN_RNB_PATH.",
+            value="${OPEN_RNB_PATH}",
             advanced=True,
         ),
         desc.ChoiceParam(
@@ -176,10 +176,10 @@ class RNbNeuS(desc.Node):
                     chunk, normal_sfm, mask_folder)
 
             # --- Resolve RNb-NeuS code path from config.json ---
-            rnbneus_path = chunk.node.rnbneusPath.evalValue
+            rnbneus_path = chunk.node.openRnbPath.evalValue
             if not rnbneus_path or not os.path.isdir(rnbneus_path):
                 raise RuntimeError(
-                    "RNBNEUS_PATH is empty or not a valid directory. "
+                    "OPEN_RNB_PATH is empty or not a valid directory. "
                     "Set it in config.json. Got: '{}'".format(rnbneus_path))
 
             # --- Standard imports ---
@@ -194,7 +194,7 @@ class RNbNeuS(desc.Node):
             from pytorch_lightning.utilities.rank_zero import rank_zero_info
             from omegaconf import OmegaConf
 
-            # --- Add RNb-NeuS to sys.path temporarily for imports ---
+            # --- Add Open-RNb to sys.path temporarily for imports ---
             original_path = sys.path[:]
             sys.path.insert(0, rnbneus_path)
             try:
@@ -211,7 +211,7 @@ class RNbNeuS(desc.Node):
                 )
             except ImportError as e:
                 raise RuntimeError(
-                    "Failed to import RNb-NeuS modules from {}: {}".format(
+                    "Failed to import Open-RNb modules from {}: {}".format(
                         rnbneus_path, e))
             finally:
                 sys.path[:] = original_path
@@ -386,7 +386,7 @@ class RNbNeuS(desc.Node):
                     albedo_cfg,
                     MeshroomProgressCallback, _make_trainer_cfg,
                     _recompute_scheduler,
-                    # RNb-NeuS modules
+                    # Open-RNb modules
                     torch=torch, np=np, copy=copy,
                     systems=systems, OmegaConf=OmegaConf,
                     Trainer=Trainer, ModelCheckpoint=ModelCheckpoint,
@@ -411,7 +411,7 @@ class RNbNeuS(desc.Node):
             # --- Move mesh to fixed output path ---
             import glob as glob_mod
             output_mesh = chunk.node.outputMesh.value
-            # RNb-NeuS exports .ply (not .obj); search both formats
+            # Open-RNb exports .ply (not .obj); search both formats
             mesh_files = glob_mod.glob(
                 os.path.join(node_cache, 'it*-mc*.obj'))
             mesh_files += glob_mod.glob(
@@ -430,7 +430,7 @@ class RNbNeuS(desc.Node):
                 import trimesh as _trimesh
                 mesh_file = max(mesh_files, key=os.path.getmtime)
                 # Re-export as OBJ for Meshroom viewer compatibility
-                # (Qt3D/Assimp fails on PLY files from RNb-NeuS)
+                # (Qt3D/Assimp fails on PLY files from Open-RNb)
                 _mesh = _trimesh.load(mesh_file)
                 _mesh.export(output_mesh, file_type='obj')
                 del _mesh

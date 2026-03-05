@@ -1,22 +1,22 @@
 <div align="center">
 
-# mrRNbNeuS
+# mrOpenRNb
 
-### Meshroom Plugin for the Open-Source Implementation of RNb-NeuS
+### Meshroom Plugin for Open-RNb
 
 <p>
-Integrate <a href="https://github.com/RobinBruneau/RNb-NeuS_license_free">RNb-NeuS</a> neural surface reconstruction directly into your <a href="https://github.com/alicevision/Meshroom">Meshroom</a> photogrammetry pipeline.
+Integrate <a href="https://github.com/RobinBruneau/Open-RNb">Open-RNb</a> neural surface reconstruction directly into your <a href="https://github.com/alicevision/Meshroom">Meshroom</a> photogrammetry pipeline.
 </p>
 
-<a href="https://github.com/RobinBruneau/RNb-NeuS_license_free"><img src="https://img.shields.io/badge/Core-RNb--NeuS-green" alt="RNb-NeuS" height="25"></a>
+<a href="https://github.com/RobinBruneau/Open-RNb"><img src="https://img.shields.io/badge/Core-Open--RNb-green" alt="Open-RNb" height="25"></a>
 
 </div>
 
 ---
 
-## What is RNb-NeuS?
+## What is Open-RNb?
 
-**RNb-NeuS** is a method for high-quality 3D surface reconstruction from multi-view normal and reflectance (albedo) maps, estimated by photometric stereo methods such as [SDM-UniPS](https://github.com/satoshi-ikehata/SDM-UniPS-CVPR2023/) and [Uni-MS-PS](https://github.com/Clement-Hardy/Uni-MS-PS). Built on [NeuS](https://lingjie0206.github.io/papers/NeuS/) neural implicit surfaces and [instant-nsr-pl](https://github.com/bennyguo/instant-nsr-pl), it combines normal supervision with a two-phase albedo scaling pipeline to produce accurate geometry even when per-view reflectance maps have inconsistent scales.
+**Open-RNb** is an open-source method for high-quality 3D surface reconstruction from multi-view normal and reflectance (albedo) maps, estimated by photometric stereo methods such as [SDM-UniPS](https://github.com/satoshi-ikehata/SDM-UniPS-CVPR2023/) and [Uni-MS-PS](https://github.com/Clement-Hardy/Uni-MS-PS). Built on [NeuS](https://lingjie0206.github.io/papers/NeuS/) neural implicit surfaces and [instant-nsr-pl](https://github.com/bennyguo/instant-nsr-pl), it combines normal supervision with a two-phase albedo scaling pipeline to produce accurate geometry even when per-view reflectance maps have inconsistent scales.
 
 ### Brief history
 
@@ -26,8 +26,8 @@ Integrate <a href="https://github.com/RobinBruneau/RNb-NeuS_license_free">RNb-Ne
 - **RNb-NeuS2** (IJCV 2025): an extended journal version that represents reflectance and surface normals as radiance vectors under simulated illumination, enabling integration into both traditional multi-view stereo and neural volume rendering pipelines. Achieves state-of-the-art results on DiLiGenT-MV, LUCES-MV, and Skoltech3D benchmarks.
   [Project page](https://robinbruneau.github.io/publications/rnb_neus2.html) | [arXiv](https://arxiv.org/abs/2506.04115)
 
-- **RNb-NeuS (license-free)**: a fully open-source reimplementation equivalent to RNb-NeuS2, replacing all proprietary CUDA libraries with standard PyTorch + [tiny-cuda-nn](https://github.com/NVlabs/tiny-cuda-nn). This is the implementation used by this plugin.
-  [GitHub](https://github.com/RobinBruneau/RNb-NeuS_license_free)
+- **Open-RNb**: a fully open-source reimplementation equivalent to RNb-NeuS2, replacing all proprietary CUDA libraries with standard PyTorch + [tiny-cuda-nn](https://github.com/NVlabs/tiny-cuda-nn). This is the implementation used by this plugin.
+  [GitHub](https://github.com/RobinBruneau/Open-RNb)
 
 ---
 
@@ -52,13 +52,13 @@ Full dependency list: [`requirements.txt`](requirements.txt)
 
 ```bash
 cd /path/to/your/plugins
-git clone https://github.com/meshroomHub/mrRNbNeuS.git
+git clone https://github.com/meshroomHub/mrOpenRNb.git
 ```
 
-### 2. Clone the RNb-NeuS core code
+### 2. Clone the Open-RNb core code
 
 ```bash
-git clone https://github.com/RobinBruneau/RNb-NeuS_license_free.git
+git clone https://github.com/RobinBruneau/Open-RNb.git
 ```
 
 ### 3. Set up the virtual environment
@@ -67,17 +67,17 @@ Meshroom looks for a folder named **`venv`** at the plugin root and uses its Pyt
 
 #### Option A: Symlink an existing venv
 
-If you already have a working virtual environment from the [RNb-NeuS license-free](https://github.com/RobinBruneau/RNb-NeuS_license_free) repository (e.g. its `.venv`), you can simply symlink it:
+If you already have a working virtual environment from the [Open-RNb](https://github.com/RobinBruneau/Open-RNb) repository (e.g. its `.venv`), you can simply symlink it:
 
 ```bash
-cd mrRNbNeuS
-ln -s /absolute/path/to/RNb-NeuS_license_free/.venv venv
+cd mrOpenRNb
+ln -s /absolute/path/to/Open-RNb/.venv venv
 ```
 
 #### Option B: Create a fresh venv
 
 ```bash
-cd mrRNbNeuS
+cd mrOpenRNb
 
 # Create the venv (must be named "venv", not ".venv")
 python3 -m venv venv
@@ -102,21 +102,21 @@ git clone --recursive https://github.com/NVlabs/tiny-cuda-nn.git
 cd tiny-cuda-nn/bindings/torch
 # Set your GPU architecture: 70=V100, 75=T4, 80=A100, 86=RTX 3080/3090, 89=RTX 4090
 TCNN_CUDA_ARCHITECTURES=86 python setup.py install
-cd /path/to/your/plugins/mrRNbNeuS
+cd /path/to/your/plugins/mrOpenRNb
 
 deactivate
 ```
 
 ### 4. Configure the plugin
 
-Edit `meshroom/config.json` to point to your RNb-NeuS clone:
+Edit `meshroom/config.json` to point to your Open-RNb clone:
 
 ```json
 [
     {
-        "key": "RNBNEUS_PATH",
+        "key": "OPEN_RNB_PATH",
         "type": "path",
-        "value": "/absolute/path/to/RNb-NeuS_license_free"
+        "value": "/absolute/path/to/Open-RNb"
     }
 ]
 ```
@@ -127,13 +127,13 @@ Set the `MESHROOM_PLUGINS_PATH` environment variable:
 
 ```bash
 # Linux
-export MESHROOM_PLUGINS_PATH=/path/to/your/plugins/mrRNbNeuS:$MESHROOM_PLUGINS_PATH
+export MESHROOM_PLUGINS_PATH=/path/to/your/plugins/mrOpenRNb:$MESHROOM_PLUGINS_PATH
 
 # Windows
-set MESHROOM_PLUGINS_PATH=C:\path\to\mrRNbNeuS;%MESHROOM_PLUGINS_PATH%
+set MESHROOM_PLUGINS_PATH=C:\path\to\mrOpenRNb;%MESHROOM_PLUGINS_PATH%
 ```
 
-Launch Meshroom: the **RNbNeuS** node appears under the **Neural Reconstruction** category.
+Launch Meshroom: the **OpenRNb** node appears under the **Neural Reconstruction** category.
 
 ### 6. Verify installation
 
@@ -152,12 +152,12 @@ import torch; print(f'CUDA: {torch.cuda.is_available()}, GPU: {torch.cuda.get_de
 ## Plugin Structure
 
 ```
-mrRNbNeuS/
+mrOpenRNb/
 ├── meshroom/
-│   ├── config.json                # Plugin configuration (RNBNEUS_PATH)
-│   └── RNbNeuS/
+│   ├── config.json                # Plugin configuration (OPEN_RNB_PATH)
+│   └── OpenRNb/
 │       ├── __init__.py
-│       └── RNbNeuS.py             # Meshroom node definition
+│       └── OpenRNb.py             # Meshroom node definition
 ├── venv/                          # Python virtual environment (or symlink, see step 3)
 ├── requirements.txt               # Python dependencies
 └── README.md
@@ -185,7 +185,7 @@ For more details on how Meshroom plugins work, see:
 | `sphereScale` | Sphere Scale | Bounding sphere scale after normalization (default: 1.0) |
 | `warmupRatio` | Phase 1 Ratio | Fraction of steps for geometry-only phase (default: 0.1) |
 | `useGpu` | Use GPU | Use GPU for training (default: true) |
-| `rnbneusPath` | RNb-NeuS Path | Path to RNb-NeuS code (set via `config.json`) |
+| `openRnbPath` | Open-RNb Path | Path to Open-RNb code (set via `config.json`) |
 
 ### Outputs
 
@@ -208,7 +208,7 @@ This work is supported by [**DOPAMIn**](https://www.cnrsinnovation.com/actualite
 
 | Project | Description |
 |---------|-------------|
-| [RNb-NeuS (license-free)](https://github.com/RobinBruneau/RNb-NeuS_license_free) | Open-source reimplementation of RNb-NeuS2, used by this plugin |
+| [Open-RNb](https://github.com/RobinBruneau/Open-RNb) | Open-source reimplementation of RNb-NeuS2, used by this plugin |
 | [RNb-NeuS2](https://robinbruneau.github.io/publications/rnb_neus2.html) | Original RNb-NeuS2 method (IJCV 2025) |
 | [mrSDMUniPS](https://github.com/meshroomHub/mrSDMUniPS) | Meshroom plugin for SDM-UniPS photometric stereo |
 
