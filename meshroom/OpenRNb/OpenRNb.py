@@ -194,9 +194,7 @@ class OpenRNb(desc.Node):
             from pytorch_lightning.utilities.rank_zero import rank_zero_info
             from omegaconf import OmegaConf
 
-            # --- Add Open-RNb to sys.path temporarily for imports ---
-            original_path = sys.path[:]
-            sys.path.insert(0, rnbneus_path)
+            # --- Import Open-RNb modules (pip install or sys.path fallback) ---
             try:
                 from utils.misc import load_config
                 import datasets
@@ -209,12 +207,27 @@ class OpenRNb(desc.Node):
                 from utils.albedo_scaling import (
                     compute_albedo_scale_ratios, scale_albedo_images,
                 )
-            except ImportError as e:
-                raise RuntimeError(
-                    "Failed to import Open-RNb modules from {}: {}".format(
-                        rnbneus_path, e))
-            finally:
-                sys.path[:] = original_path
+            except ImportError:
+                original_path = sys.path[:]
+                sys.path.insert(0, rnbneus_path)
+                try:
+                    from utils.misc import load_config
+                    import datasets
+                    import systems
+                    from datasets.utils import (
+                        compute_scaling_from_mesh, neus_c2w_to_standard,
+                        SPACE_NORMALIZED,
+                    )
+                    from models.geometry import MarchingCubeHelper
+                    from utils.albedo_scaling import (
+                        compute_albedo_scale_ratios, scale_albedo_images,
+                    )
+                except ImportError as e:
+                    raise RuntimeError(
+                        "Failed to import Open-RNb modules from {}: {}".format(
+                            rnbneus_path, e))
+                finally:
+                    sys.path[:] = original_path
 
             initialized = True
 
@@ -268,7 +281,15 @@ class OpenRNb(desc.Node):
             override_path = os.path.join(node_cache, 'config_override.yaml')
             OmegaConf.save(OmegaConf.create(override), override_path)
 
+            # Try pip-installed configs package first, then filesystem path
             base_yaml = os.path.join(rnbneus_path, 'configs', 'sfm.yaml')
+            if not os.path.exists(base_yaml):
+                try:
+                    import configs
+                    base_yaml = os.path.join(
+                        os.path.dirname(configs.__file__), 'sfm.yaml')
+                except ImportError:
+                    pass
             if not os.path.exists(base_yaml):
                 raise RuntimeError(
                     "Base config not found: {}".format(base_yaml))

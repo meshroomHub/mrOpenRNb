@@ -1,14 +1,1 @@
-psutil
-pytorch-lightning<2
-omegaconf==2.2.3
-nerfacc==0.3.3
-matplotlib
-opencv-python
-imageio
-imageio-ffmpeg
-scipy
-PyMCubes
-pyransac3d
-torch_efficient_distloss
-tensorboard
-trimesh[easy]
+open_rnb @ git+https://github.com/RobinBruneau/Open-RNb.git@meshroom
