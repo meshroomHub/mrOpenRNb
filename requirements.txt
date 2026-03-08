@@ -1,3 +1,4 @@
+psutil
 open_rnb @ git+https://github.com/RobinBruneau/Open-RNb.git@meshroom
 # tinycudann requires CUDA compilation — install manually:
 # pip install --no-build-isolation "git+https://github.com/NVlabs/tiny-cuda-nn/#subdirectory=bindings/torch"
