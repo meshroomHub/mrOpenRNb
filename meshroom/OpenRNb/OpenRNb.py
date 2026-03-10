@@ -80,7 +80,7 @@ class OpenRNb(desc.Node):
         desc.ChoiceParam(
             name="scalingMode",
             label="Scaling Mode",
-            description="Scene normalization: auto detects landmarks or falls back to silhouettes.",
+            description="Scene normalization: auto prefers silhouettes when masks are available, then falls back to landmarks (pcd) or camera centres.",
             values=["auto", "pcd", "silhouettes", "cameras", "none"],
             value="auto",
             exclusive=True,
@@ -329,6 +329,7 @@ class OpenRNb(desc.Node):
                     self.total_steps = total_steps
                     self.step_offset = step_offset
                     self.log_every = log_every
+                    self.nan_detected = False
 
                 def on_train_batch_end(self, trainer, pl_module,
                                        outputs, batch, batch_idx):
@@ -347,6 +348,7 @@ class OpenRNb(desc.Node):
                             chunk.logger.error(
                                 "NaN/Inf loss detected at step {}. "
                                 "Stopping training.".format(abs_step))
+                            self.nan_detected = True
                             trainer.should_stop = True
                             return
 
@@ -499,10 +501,10 @@ class OpenRNb(desc.Node):
 
             ckpt_kwargs = OmegaConf.to_container(
                 config.get('checkpoint', {}), resolve=True)
+            progress_cb = ProgressCb(chunk, max_steps)
             callbacks = [
                 ModelCheckpoint(dirpath=config.ckpt_dir, **ckpt_kwargs),
-
-                ProgressCb(chunk, max_steps),
+                progress_cb,
             ]
 
             trainer = Trainer(
@@ -514,6 +516,10 @@ class OpenRNb(desc.Node):
 
             chunk.logger.info("Starting training for {} steps...".format(max_steps))
             trainer.fit(system, datamodule=dm)
+            if progress_cb.nan_detected:
+                raise RuntimeError(
+                    "Training aborted: NaN/Inf loss detected. "
+                    "Try increasing maxSteps or reducing the learning rate.")
             trainer.test(system, datamodule=dm)
         finally:
             del system, trainer
@@ -708,10 +714,10 @@ class OpenRNb(desc.Node):
             system_p2 = systems.make(config_p2.system.name, config_p2)
             ckpt_kwargs_p2 = OmegaConf.to_container(
                 config_p2.get('checkpoint', {}), resolve=True)
+            progress_cb_p2 = ProgressCb(chunk, max_steps + phase1_steps, step_offset=phase1_steps)
             callbacks_p2 = [
                 ModelCheckpoint(dirpath=config_p2.ckpt_dir, **ckpt_kwargs_p2),
-
-                ProgressCb(chunk, max_steps + phase1_steps, step_offset=phase1_steps),
+                progress_cb_p2,
             ]
             trainer_p2 = Trainer(
                 devices=1, accelerator=accelerator,
@@ -721,6 +727,10 @@ class OpenRNb(desc.Node):
             )
 
             trainer_p2.fit(system_p2, datamodule=dm)
+            if progress_cb_p2.nan_detected:
+                raise RuntimeError(
+                    "Training aborted: NaN/Inf loss detected during phase 2. "
+                    "Try increasing maxSteps or reducing the learning rate.")
             trainer_p2.test(system_p2, datamodule=dm)
         finally:
             del system_p2, trainer_p2

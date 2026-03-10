@@ -181,7 +181,7 @@ For more details on how Meshroom plugins work, see:
 | `inputMaskFolder` | Mask Folder | Folder with mask images containing viewId in filename (auto-generates SfMData) |
 | `maxSteps` | Max Training Steps | Total training iterations (default: 20000) |
 | `meshResolution` | Mesh Resolution | Marching cubes grid resolution (default: 512) |
-| `scalingMode` | Scaling Mode | Scene normalization: `auto`, `pcd`, `silhouettes`, `cameras`, `none` |
+| `scalingMode` | Scaling Mode | Scene normalization: `auto` (prefers silhouettes when masks available, then pcd, then cameras), `pcd`, `silhouettes`, `cameras`, `none` |
 | `sphereScale` | Sphere Scale | Bounding sphere scale after normalization (default: 1.0) |
 | `warmupRatio` | Phase 1 Ratio | Fraction of steps for geometry-only phase (default: 0.1) |
 | `useGpu` | Use GPU | Use GPU for training (default: true) |
@@ -201,6 +201,7 @@ For more details on how Meshroom plugins work, see:
 This work is supported by [**DOPAMIn**](https://www.cnrsinnovation.com/actualite/une-seconde-promotion-pour-le-programme-open-7-nouveaux-logiciels-scientifiques-a-valoriser/) (*Diffusion Open de Photogrammetrie par AliceVision/Meshroom pour l'Industrie*), selected in the 2024 cohort of the [**OPEN**](https://www.cnrsinnovation.com/open/) programme run by [CNRS Innovation](https://www.cnrsinnovation.com/). OPEN supports the valorization of open-source scientific software by providing dedicated developer resources, governance expertise, and industry partnership support.
 
 **Lead researcher:** [Jean-Denis Durou](https://cv.hal.science/jean-denis-durou), [IRIT](https://www.irit.fr/) (INP-Toulouse)
+**Co-lead:** [Lilian Calvet](https://fr.linkedin.com/in/lilian-calvet-42b1a689), [Balgrist University Hospital](https://www.balgrist.ch/)
 
 ---
 
@@ -211,6 +212,8 @@ This work is supported by [**DOPAMIn**](https://www.cnrsinnovation.com/actualite
 | [Open-RNb](https://github.com/RobinBruneau/Open-RNb) | Open-source reimplementation of RNb-NeuS2, used by this plugin |
 | [RNb-NeuS2](https://robinbruneau.github.io/publications/rnb_neus2.html) | Original RNb-NeuS2 method (IJCV 2025) |
 | [mrSDMUniPS](https://github.com/meshroomHub/mrSDMUniPS) | Meshroom plugin for SDM-UniPS photometric stereo |
+| [mrLINOUniPS](https://github.com/meshroomHub/mrLINOUniPS) | Meshroom plugin for LINO_UniPS photometric stereo |
+| [mrUniMSPS](https://github.com/meshroomHub/mrUniMSPS) | Meshroom plugin for Uni-MS-PS photometric stereo |
 
 ---
 
