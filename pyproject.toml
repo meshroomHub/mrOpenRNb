@@ -28,7 +28,7 @@ torch = { index = "pytorch-cu124" }
 torchvision = { index = "pytorch-cu124" }
 tinycudann = { index = "meshroomhubwarehouse-cu124-pt25" }
 nerfacc = { index = "meshroomhubwarehouse-cu124-pt25" }
-open-rnb = { git = "https://github.com/RobinBruneau/Open-RNb.git", branch = "meshroom" }
+open-rnb = { git = "https://github.com/meshroomHubWarehouse/Open-RNb.git", rev = "78dd19fc03a4186d735681676c50f54b1b282337" }
 
 [[tool.uv.index]]
 name = "pytorch-cu124"
