@@ -1,0 +1,49 @@
+[project]
+name = "mrOpenRNb"
+version = "2.0.0"
+description = "Meshroom plugin for Open-RNb neural surface reconstruction."
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+license = {text = "MPL-2.0"}
+authors = [{name = "Baptiste Brument"}, {name = "Robin Bruneau"}]
+dependencies = [
+    "numpy<2", # pyalicevision is built against NumPy 1.x.
+    "setuptools==69.5.1", # pytorch_lightning 1.9 imports "pkg_resources", removed from setuptools >= 81.
+    "torch==2.5.1",
+    "torchvision",
+    "tinycudann==2.0", # Prebuilt wheel from the index below.
+    "nerfacc==0.3.3", # Prebuilt wheel from the index below.
+    "psutil",
+    "open-rnb",
+]
+
+# Meshroom discovers the node from MESHROOM_PLUGINS_PATH, not site-packages.
+# uv only installs the plugin's dependencies into its venv.
+[tool.uv]
+package = false
+
+# tinycudann and nerfacc are prebuilt wheels, tied to CUDA 12.4, PyTorch 2.5 and Python 3.10 to 3.12.
+[tool.uv.sources]
+torch = { index = "pytorch-cu124" }
+torchvision = { index = "pytorch-cu124" }
+tinycudann = { index = "meshroomhubwarehouse-cu124-pt25" }
+nerfacc = { index = "meshroomhubwarehouse-cu124-pt25" }
+open-rnb = { git = "https://github.com/RobinBruneau/Open-RNb.git", branch = "meshroom" }
+
+[[tool.uv.index]]
+name = "pytorch-cu124"
+url = "https://download.pytorch.org/whl/cu124"
+explicit = true
+
+[[tool.uv.index]]
+name = "meshroomhubwarehouse-cu124-pt25"
+url = "https://meshroomhubwarehouse.github.io/wheels/cu124-pt25/"
+explicit = true
+
+[tool.meshroom]
+publisher = "meshroomHub"
+requirements = "Nvidia GPU with CUDA >= 12.4 (RTX 2080 Ti or newer recommended)."
+
+# Open-RNb is installed in the plugin's venv (path relative to the plugin root).
+# If you prefer to work from a local Open-RNb, set the value to "/path/to/Open-RNb".
+env = [ { key = "OPEN_RNB_PATH", type = "path", value = "venv" } ]
