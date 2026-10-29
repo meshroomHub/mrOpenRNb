@@ -1,4 +1,4 @@
-__version__ = "2.0"
+__version__ = "2.1"
 
 import os
 from meshroom.core import desc
@@ -99,6 +99,17 @@ class OpenRNb(desc.Node):
                         "Only used when albedos are provided.",
             value=0.1,
             range=(0.01, 0.5, 0.01),
+        ),
+        desc.File(
+            name="configFile",
+            label="Config File",
+            description="Optional Open-RNb YAML config, merged over the default configs/sfm.yaml: "
+                        "it may set any key (e.g. model.train_num_rays, model.max_train_num_rays, "
+                        "model.num_samples_per_ray, model.ray_chunk, losses, learning rates). "
+                        "The node inputs (SfMData, scaling, mesh resolution, steps, phase 1 ratio) "
+                        "are applied on top of it.",
+            value="",
+            advanced=True,
         ),
         desc.BoolParam(
             name="useGpu",
@@ -293,7 +304,15 @@ class OpenRNb(desc.Node):
             if not os.path.exists(base_yaml):
                 raise RuntimeError(
                     "Base config not found: {}".format(base_yaml))
-            config = load_config(base_yaml, override_path)
+            config_files = [base_yaml]
+            user_config = chunk.node.configFile.value
+            if user_config:
+                if not os.path.isfile(user_config):
+                    raise RuntimeError(
+                        "Config file not found: {}".format(user_config))
+                chunk.logger.info("Config file: {}".format(user_config))
+                config_files.append(user_config)
+            config = load_config(*config_files, override_path)
 
             # --- Redirect all output paths to nodeCacheFolder ---
             config.cmd_args = {}
@@ -586,10 +605,9 @@ class OpenRNb(desc.Node):
                 else ds_diag.scene_center,
                 float(ds_diag.scale_factor)))
 
-        # Save real albedos, replace with white for phase 1
+        # Phase 1 uses white albedos: config_p1.model.no_albedo already sets them
+        # on the sampled rays, so no white copy of the images is needed on the GPU.
         ds = dm.train_dataloader().dataset
-        real_albedos = ds.all_images
-        ds.all_images = torch.ones_like(ds.all_images)
 
         ckpt_kwargs_p1 = OmegaConf.to_container(
             config_p1.get('checkpoint', {}), resolve=True)
@@ -605,9 +623,6 @@ class OpenRNb(desc.Node):
         )
 
         trainer_p1.fit(system_p1, datamodule=dm)
-
-        # Restore real albedos
-        ds.all_images = real_albedos
 
         # ---- ALBEDO SCALING: extract intermediate mesh + compute ratios ----
         chunk.logger.info("[TwoPhase] Extracting intermediate mesh for albedo scaling")
