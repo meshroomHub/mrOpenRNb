@@ -1,6 +1,6 @@
 [project]
 name = "mrOpenRNb"
-version = "2.0.0"
+version = "2.1.0"
 description = "Meshroom plugin for Open-RNb neural surface reconstruction."
 readme = "README.md"
 requires-python = ">=3.10,<3.13"
@@ -44,6 +44,7 @@ explicit = true
 publisher = "meshroomHub"
 requirements = "Nvidia GPU with CUDA >= 12.4 (RTX 2080 Ti or newer recommended)."
 
-# Open-RNb is installed in the plugin's venv (path relative to the plugin root).
-# If you prefer to work from a local Open-RNb, set the value to "/path/to/Open-RNb".
+# Open-RNb is installed in the plugin's venv (path relative to the plugin root): the node imports it from there.
+# OPEN_RNB_PATH is only a fallback, added to the Python path when Open-RNb is not installed in the venv;
+# an environment variable of the same name overrides it. To run a local clone, see the README.
 env = [ { key = "OPEN_RNB_PATH", type = "path", value = "venv" } ]
