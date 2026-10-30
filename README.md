@@ -33,118 +33,81 @@ Integrate <a href="https://github.com/RobinBruneau/Open-RNb">Open-RNb</a> neural
 
 ## Requirements
 
-- **Python** 3.10+
-- **CUDA** 12.x + NVIDIA GPU (RTX 2080 Ti or newer recommended)
-- **[Meshroom](https://github.com/alicevision/Meshroom)** 2025+ (develop branch)
-- [`tinycudann`](https://github.com/NVlabs/tiny-cuda-nn)
-- [`nerfacc`](https://github.com/nerfstudio-project/nerfacc) 0.3.3
-- [`torch_efficient_distloss`](https://github.com/sunset1995/torch_efficient_distloss)
+- **[Meshroom](https://github.com/alicevision/Meshroom)** 2026.1 or later (develop branch until its release):
+  Meshroom 2025.1.x has neither the plugin manager nor the `[tool.meshroom]` settings of `pyproject.toml`
+- **NVIDIA GPU** with a driver supporting CUDA 12.4 (RTX 2080 Ti or newer recommended)
+- **Python** 3.10 to 3.12 (prebuilt `tinycudann` and `nerfacc` wheels)
 
-Full dependency list: [`requirements.txt`](requirements.txt)
+All Python dependencies, Open-RNb included, are declared in [`pyproject.toml`](pyproject.toml):
+PyTorch 2.5.1 (CUDA 12.4), `tinycudann` and `nerfacc` as prebuilt wheels from the
+[meshroomHubWarehouse wheel index](https://meshroomhubwarehouse.github.io/wheels/cu124-pt25/),
+and `open-rnb` pinned to a commit of [meshroomHubWarehouse/Open-RNb](https://github.com/meshroomHubWarehouse/Open-RNb),
+a fork kept in sync with [RobinBruneau/Open-RNb](https://github.com/RobinBruneau/Open-RNb).
 
 ---
 
-## Quick Start
+## Installation
 
-> **Prerequisite:** a working [Meshroom](https://github.com/alicevision/Meshroom) installation.
+### With the plugin manager
 
-### 1. Clone the plugin
+From Meshroom's plugin manager (*Manage Plugins*), or from the command line:
 
 ```bash
-cd /path/to/your/plugins
+meshroom_plugins install mrOpenRNb
+```
+
+The installer creates the plugin `venv/` with `uv sync`: nothing needs to be compiled.
+The **OpenRNb** node then appears under the **Neural Reconstruction** category.
+
+### Manual install (without the plugin manager)
+
+Requires [uv](https://docs.astral.sh/uv/).
+
+```bash
+cd /path/to/plugins
 git clone https://github.com/meshroomHub/mrOpenRNb.git
-```
-
-### 2. Clone the Open-RNb core code
-
-```bash
-git clone https://github.com/RobinBruneau/Open-RNb.git
-```
-
-### 3. Set up the virtual environment
-
-Meshroom looks for a folder named **`venv`** at the plugin root and uses its Python interpreter to run the node. You have two options:
-
-#### Option A: Symlink an existing venv
-
-If you already have a working virtual environment from the [Open-RNb](https://github.com/RobinBruneau/Open-RNb) repository (e.g. its `.venv`), you can simply symlink it:
-
-```bash
 cd mrOpenRNb
-ln -s /absolute/path/to/Open-RNb/.venv venv
+UV_PROJECT_ENVIRONMENT=venv uv sync   # Meshroom looks for venv/ at the plugin root
+export MESHROOM_PLUGINS_PATH=/path/to/plugins/mrOpenRNb
 ```
 
-#### Option B: Create a fresh venv
+On Windows (PowerShell): `$env:UV_PROJECT_ENVIRONMENT = "venv"; uv sync`, then
+`$env:MESHROOM_PLUGINS_PATH = "C:\path\to\plugins\mrOpenRNb"`.
+
+Check the environment:
 
 ```bash
-cd mrOpenRNb
-
-# Create the venv (must be named "venv", not ".venv")
-python3 -m venv venv
-source venv/bin/activate
-
-# Upgrade pip and install build tools
-pip install --upgrade pip
-pip install setuptools==69.5.1 ninja
-
-# Install PyTorch (CUDA 12.x)
-pip install torch torchvision
-
-# Install main dependencies
-pip install -r requirements.txt
-
-# Install tinycudann
-pip install "git+https://github.com/NVlabs/tiny-cuda-nn/#subdirectory=bindings/torch"
-
-# If the pip install above fails (ModuleNotFoundError: pkg_resources), build from source:
-cd /tmp
-git clone --recursive https://github.com/NVlabs/tiny-cuda-nn.git
-cd tiny-cuda-nn/bindings/torch
-# Set your GPU architecture: 70=V100, 75=T4, 80=A100, 86=RTX 3080/3090, 89=RTX 4090
-TCNN_CUDA_ARCHITECTURES=86 python setup.py install
-cd /path/to/your/plugins/mrOpenRNb
-
-deactivate
+venv/bin/python -c "import tinycudann, nerfacc, torch, systems; print('CUDA:', torch.cuda.is_available())"
 ```
 
-### 4. Configure the plugin
+### Working on a local Open-RNb clone
 
-Edit `meshroom/config.json` to point to your Open-RNb clone:
-
-```json
-[
-    {
-        "key": "OPEN_RNB_PATH",
-        "type": "path",
-        "value": "/absolute/path/to/Open-RNb"
-    }
-]
-```
-
-### 5. Register the plugin in Meshroom
-
-Set the `MESHROOM_PLUGINS_PATH` environment variable:
+The node imports Open-RNb from the plugin `venv/`. To run a local clone instead, install it
+in editable mode in that venv:
 
 ```bash
-# Linux
-export MESHROOM_PLUGINS_PATH=/path/to/your/plugins/mrOpenRNb:$MESHROOM_PLUGINS_PATH
-
-# Windows
-set MESHROOM_PLUGINS_PATH=C:\path\to\mrOpenRNb;%MESHROOM_PLUGINS_PATH%
+uv pip install --python venv/bin/python -e /path/to/Open-RNb
 ```
 
-Launch Meshroom: the **OpenRNb** node appears under the **Neural Reconstruction** category.
+Updating or reinstalling the plugin from the plugin manager recreates `venv/`: run this command again afterwards.
+`OPEN_RNB_PATH` (`[tool.meshroom]` in `pyproject.toml`, default `venv`; an environment variable of the same name
+overrides it) is only a fallback: the node adds it to the Python path when Open-RNb is not installed in the venv.
 
-### 6. Verify installation
+---
 
-```bash
-source venv/bin/activate
-python -c "
-import tinycudann; print('tinycudann OK')
-import nerfacc; print('nerfacc OK')
-from torch_efficient_distloss import flatten_eff_distloss; print('distloss OK')
-import torch; print(f'CUDA: {torch.cuda.is_available()}, GPU: {torch.cuda.get_device_name(0)}')
-"
+## GPU memory
+
+The training views are loaded on the GPU: memory grows with the number of pixels of the normal (and albedo) maps,
+about 40 bytes per pixel in phase 1 and 52 in phase 2 (with albedos), plus about 4 GB for training and rendering.
+For example, 13 views of 4144×2760 pixels peak at about 12 GB.
+
+To reduce it, downscale the input maps, or set a smaller ray batch in a YAML file given to the
+**Config File** input (`configFile`), e.g.:
+
+```yaml
+model:
+  max_train_num_rays: 4096   # default 8192
+  ray_chunk: 2048            # default 4096
 ```
 
 ---
@@ -154,12 +117,12 @@ import torch; print(f'CUDA: {torch.cuda.is_available()}, GPU: {torch.cuda.get_de
 ```
 mrOpenRNb/
 ├── meshroom/
-│   ├── config.json                # Plugin configuration (OPEN_RNB_PATH)
 │   └── OpenRNb/
 │       ├── __init__.py
 │       └── OpenRNb.py             # Meshroom node definition
-├── venv/                          # Python virtual environment (or symlink, see step 3)
-├── requirements.txt               # Python dependencies
+├── pyproject.toml                 # Dependencies and Meshroom settings (uv)
+├── requirements.txt               # Python dependencies (pip)
+├── venv/                          # Created by the installer or by uv sync
 └── README.md
 ```
 
@@ -184,8 +147,10 @@ For more details on how Meshroom plugins work, see:
 | `scalingMode` | Scaling Mode | Scene normalization: `auto` (prefers silhouettes when masks available, then pcd, then cameras), `pcd`, `silhouettes`, `cameras`, `none` |
 | `sphereScale` | Sphere Scale | Bounding sphere scale after normalization (default: 1.0) |
 | `warmupRatio` | Phase 1 Ratio | Fraction of steps for geometry-only phase (default: 0.1) |
+| `configFile` | Config File | Optional Open-RNb YAML config merged over the default `configs/sfm.yaml` (see [GPU memory](#gpu-memory)); the node inputs are applied on top of it |
 | `useGpu` | Use GPU | Use GPU for training (default: true) |
-| `openRnbPath` | Open-RNb Path | Path to Open-RNb code (set via `config.json`) |
+| `openRnbPath` | Open-RNb Path | Fallback path to Open-RNb code, `${OPEN_RNB_PATH}` (see [Working on a local Open-RNb clone](#working-on-a-local-open-rnb-clone)) |
+| `verboseLevel` | Verbose Level | Log verbosity |
 
 ### Outputs
 

@@ -121,8 +121,8 @@ class OpenRNb(desc.Node):
         desc.File(
             name="openRnbPath",
             label="Open-RNb Path",
-            description="Path to Open-RNb code directory. "
-                        "Set via config.json key OPEN_RNB_PATH.",
+            description="Fallback path to the Open-RNb code, used when Open-RNb is not installed "
+                        "in the plugin venv. Set via OPEN_RNB_PATH (pyproject.toml or environment).",
             value="${OPEN_RNB_PATH}",
             advanced=True,
         ),
@@ -186,12 +186,12 @@ class OpenRNb(desc.Node):
                 mask_sfm = self._generate_mask_sfm(
                     chunk, normal_sfm, mask_folder)
 
-            # --- Resolve RNb-NeuS code path from config.json ---
+            # --- Resolve the Open-RNb fallback path (OPEN_RNB_PATH) ---
             rnbneus_path = chunk.node.openRnbPath.evalValue
             if not rnbneus_path or not os.path.isdir(rnbneus_path):
                 raise RuntimeError(
                     "OPEN_RNB_PATH is empty or not a valid directory. "
-                    "Set it in config.json. Got: '{}'".format(rnbneus_path))
+                    "Set it in pyproject.toml or the environment. Got: '{}'".format(rnbneus_path))
 
             # --- Standard imports ---
             import sys
