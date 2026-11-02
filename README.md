@@ -75,10 +75,24 @@ It needs [mrLINOUniPS](https://github.com/meshroomHub/mrLINOUniPS), from Meshroo
 [mrSegmentation](https://github.com/meshroomHub/mrSegmentation) (node `ImageSegmentationSam3`), not in the plugin
 registry yet: install it by hand.
 
-Images: one folder per pose, holding the single-light images and one reference image lit by all the lights, whose
-filename contains `ambient` (CameraInit makes it the pose reference) and `all_leds` (`SfMFilter_1` keeps these images
-for the structure from motion and the segmentation). Set the SAM 3 prompt (`ImageSegmentationSam3_1`, default `stone`)
-to your object.
+CameraInit groups the images of a folder into one pose only if the folder name starts with `PS_`. Elsewhere, each image
+becomes its own pose and the photometric stereo nodes find no multi-lighting pose, so images must follow this layout:
+
+```
+dataset/
+└── PS/
+    ├── PS_01/
+    │   ├── ambient_all_leds.jpg   # reference image, lit by all the lights
+    │   ├── led_01.jpg             # single-light images
+    │   ├── led_02.jpg
+    │   └── ...
+    ├── PS_02/
+    └── ...
+```
+
+The filename of the reference image must contain `ambient` (CameraInit makes it the pose reference) and `all_leds`
+(`SfMFilter_1` keeps these images for the structure from motion and the segmentation). Drop `dataset/PS` on Meshroom, then
+set the SAM 3 prompt (`ImageSegmentationSam3_1`, default `stone`) to your object.
 
 ---
 
