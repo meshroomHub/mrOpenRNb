@@ -68,7 +68,7 @@ cd /path/to/plugins
 git clone https://github.com/meshroomHub/mrOpenRNb.git
 cd mrOpenRNb
 UV_PROJECT_ENVIRONMENT=venv uv sync   # Meshroom looks for venv/ at the plugin root
-export MESHROOM_PLUGINS_PATH=/path/to/plugins/mrOpenRNb
+export MESHROOM_PLUGINS_PATH=/path/to/plugins/mrOpenRNb:$MESHROOM_PLUGINS_PATH
 ```
 
 On Windows (PowerShell): `$env:UV_PROJECT_ENVIRONMENT = "venv"; uv sync`, then
@@ -121,7 +121,6 @@ mrOpenRNb/
 │       ├── __init__.py
 │       └── OpenRNb.py             # Meshroom node definition
 ├── pyproject.toml                 # Dependencies and Meshroom settings (uv)
-├── requirements.txt               # Python dependencies (pip)
 ├── venv/                          # Created by the installer or by uv sync
 └── README.md
 ```
@@ -176,9 +175,11 @@ This work is supported by [**DOPAMIn**](https://www.cnrsinnovation.com/actualite
 |---------|-------------|
 | [Open-RNb](https://github.com/RobinBruneau/Open-RNb) | Open-source reimplementation of RNb-NeuS2, used by this plugin |
 | [RNb-NeuS2](https://robinbruneau.github.io/publications/rnb_neus2.html) | Original RNb-NeuS2 method (IJCV 2025) |
+| [mrLINOUniPS](https://github.com/meshroomHub/mrLINOUniPS) | Meshroom plugin for LINO-UniPS photometric stereo |
 | [mrSDMUniPS](https://github.com/meshroomHub/mrSDMUniPS) | Meshroom plugin for SDM-UniPS photometric stereo |
-| [mrLINOUniPS](https://github.com/meshroomHub/mrLINOUniPS) | Meshroom plugin for LINO_UniPS photometric stereo |
 | [mrUniMSPS](https://github.com/meshroomHub/mrUniMSPS) | Meshroom plugin for Uni-MS-PS photometric stereo |
+| [mrLedGetter](https://github.com/meshroomHub/mrLedGetter) | Meshroom plugin for LED-getter near-light photometric stereo |
+| [mrRNbNeuS2](https://github.com/meshroomHub/mrRNbNeuS2) | Meshroom plugin for RNb-NeuS2 neural surface reconstruction |
 
 ---
 
