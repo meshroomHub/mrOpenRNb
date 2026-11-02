@@ -91,8 +91,10 @@ dataset/
 ```
 
 The filename of the reference image must contain `ambient` (CameraInit makes it the pose reference) and `all_leds`
-(`SfMFilter_1` keeps these images for the structure from motion and the segmentation). Drop `dataset/PS` on Meshroom, then
-set the SAM 3 prompt (`ImageSegmentationSam3_1`, default `stone`) to your object.
+(`SfMFilter_1` keeps these images for the structure from motion and the segmentation).
+
+Drag and drop the parent folder `dataset/` into the Image Gallery of Meshroom, then set the SAM 3 prompt
+(`ImageSegmentationSam3_1`, default `stone`) to your object.
 
 ---
 
