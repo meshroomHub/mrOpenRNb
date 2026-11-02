@@ -1,6 +1,6 @@
 [project]
 name = "mrOpenRNb"
-version = "2.1.1"
+version = "2.1.2"
 description = "Meshroom plugin for Open-RNb neural surface reconstruction."
 readme = "README.md"
 requires-python = ">=3.10,<3.13"

@@ -149,7 +149,7 @@ class OpenRNb(desc.Node):
             description="Reconstructed mesh in world coordinates.",
             value="{nodeCacheFolder}/mesh.obj",
             semantic="mesh",
-            group="",
+            commandLineGroup="",
         ),
     ]
 
